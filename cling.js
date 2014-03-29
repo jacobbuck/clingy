@@ -46,16 +46,10 @@
 		return -1;
 	}
 
-	function proxy (fn, context) {
-		return function () {
-			return fn.apply(context, arguments);
-		};
-	}
-
-	function throttle ( fn, _c ) {
+	function throttle (fn, context) {
 		var timer = false;
 		return function () {
-			var c = _c || this, a = arguments;
+			var c = context || this, a = arguments;
 			if (false === timer)
 				timer = win.requestAnimationFrame(function () {
 					fn.apply(c, a);
@@ -115,15 +109,6 @@
 			}
 		}
 	}
-
-	/*
-	var updateAll = throttle(function () {
-		var i = instances.length;
-		while (i--) {
-			instances[i].u();
-		}
-	});
-	*/
 
 	function updateAll () {
 		var i = instances.length;
