@@ -46,16 +46,16 @@
 		return -1;
 	}
 
-	// function proxy (fn, context) {
-	// 	return function () {
-	// 		return fn.apply(context, arguments);
-	// 	};
-	// }
+	function proxy (fn, context) {
+		return function () {
+			return fn.apply(context, arguments);
+		};
+	}
 
-	function throttle ( fn ) {
+	function throttle ( fn, _c ) {
 		var timer = false;
 		return function () {
-			var c = this, a = arguments;
+			var c = _c || this, a = arguments;
 			if (false === timer)
 				timer = win.requestAnimationFrame(function () {
 					fn.apply(c, a);
@@ -98,13 +98,6 @@
 
 		instances = [];
 
-	var updateAll = throttle(function () {
-		var i = instances.length;
-		while (i--) {
-			instances[i].update();
-		}
-	});
-
 	function normalizePosition (position) {
 		position = position.match(/(left|right|center)\s*(top|bottom|center)?/);
 		return [(position[1] || 'center'), (position[2] || 'center')];
@@ -115,6 +108,30 @@
 		return [toNumber(offset[1]), toNumber(offset[2])];
 	}
 
+	function getScrollParent (element) {
+		while (element = element.parentNode) {
+			if (1 == element.nodeType && /auto|scroll/.test(getStyle(element, 'overflow')+getStyle(element, 'overflow-x')+ getStyle(element, 'overflow-y'))) {
+				return element;
+			}
+		}
+	}
+
+	/*
+	var updateAll = throttle(function () {
+		var i = instances.length;
+		while (i--) {
+			instances[i].u();
+		}
+	});
+	*/
+
+	function updateAll () {
+		var i = instances.length;
+		while (i--) {
+			instances[i].update();
+		}
+	}
+
 	on(win, 'scroll'   , updateAll);
 	on(win, 'resize'   , updateAll);
 	on(win, 'touchmove', updateAll);
@@ -122,6 +139,7 @@
 	function Cling (element, target, options) {
 		this.e = element;
 		this.t = target;
+		this.update = throttle(this.update, this);
 		return this.options(options).enable();
 	}
 
@@ -163,22 +181,31 @@
 		},
 
 		enable: function () {
-			var element = this.e;
+			var element      = this.e,
+				target       = this.t,
+				scrollParent = this.s = getScrollParent(target);
 			if (indexOf(instances, this) < 0) {
 				instances.push(this);
 			}
-			if (!getStyle(element, 'position').match(/absolute|fixed/)) {
+			if (!/absolute|fixed/.test(getStyle(element, 'position'))) {
 				element.style.position = 'absolute';
 				element.style.top = element.style.left = 0;
+			}
+			if (scrollParent) {
+				on(scrollParent, 'scroll', this.update);
 			}
 			return this.update();
 		},
 
 		disable: function () {
-			var index = indexOf(instances, this);
+			var scrollParent = this.s,
+				index = indexOf(instances, this);
 			if (index > -1) {
 				instances.splice(index, 1);
-				this.e.style.position = this.e.style.top = this.e.style.left = '';
+			}
+			this.e.style.position = this.e.style.top = this.e.style.left = '';
+			if (scrollParent) {
+				off(scrollParent, 'scroll', this.update);
 			}
 			return this;
 		}
