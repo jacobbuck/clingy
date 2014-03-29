@@ -30,6 +30,10 @@
 		return target;
 	}
 
+	function toNumber (num) {
+		return isFinite(num = parseFloat(num)) ? num : 0;
+	}
+
 	function indexOf (array, search) {
 		if ( array.indexOf ) {
 			return array.indexOf(search);
@@ -53,7 +57,7 @@
 		return function () {
 			var c = this, a = arguments;
 			if (false === timer)
-				timer = requestAnimationFrame(function () {
+				timer = win.requestAnimationFrame(function () {
 					fn.apply(c, a);
 					timer = false;
 				});
@@ -90,9 +94,7 @@
 	// Cling
 
 	var optionsDefault     = {from: '', to: '', offset: ''},
-		positionRegExp     = /^(left|right|center) (top|bottom|center)?/,
-		offsetRegExp       = /(-?\d+) (-?\d+)?/,
-		positionMultiplier = { left: 0, top: 0, right: 1, bottom: 1, center: 0.5 },
+		positionMultiplier = {left: 0, top: 0, right: 1, bottom: 1, center: 0.5},
 
 		instances = [];
 
@@ -104,17 +106,17 @@
 	});
 
 	function normalizePosition (position) {
-		position = position.match(positionRegExp);
+		position = position.match(/(left|right|center)\s*(top|bottom|center)?/);
 		return [(position[1] || 'center'), (position[2] || 'center')];
 	}
 
 	function normalizeOffset (offset) {
-		offset = offset.match(offsetRegExp);
-		return [(parseFloat(offset[1]) || 0), (parseFloat(offset[2]) || 0)];
+		offset = offset.match(/(-?\d+)\s*(-?\d+)?/);
+		return [toNumber(offset[1]), toNumber(offset[2])];
 	}
 
-	on(win, 'scroll', updateAll);
-	on(win, 'resize', updateAll);
+	on(win, 'scroll'   , updateAll);
+	on(win, 'resize'   , updateAll);
 	on(win, 'touchmove', updateAll);
 
 	function Cling (element, target, options) {
@@ -137,27 +139,37 @@
 		update: function () {
 			var element = this.e,
 				target  = this.t,
-				options = this.o;
+				options = this.o,
 
-			element.style.left = element.style.top = 0;
-
-			var elementBounding = element.getBoundingClientRect(),
+				elementBounding = element.getBoundingClientRect(),
 				targetBounding  = target.getBoundingClientRect(),
-
-				startLeft = targetBounding.left - elementBounding.left,
-				startTop  = targetBounding.top - elementBounding.top,
 
 				left = 0,
 				top  = 0;
 
-			left += (targetBounding.width   * positionMultiplier[options.from[0]]);
-			top  += (targetBounding.height  * positionMultiplier[options.from[1]]);
+			// Target Point
+			left += targetBounding.width   * positionMultiplier[options.from[0]];
+			top  += targetBounding.height  * positionMultiplier[options.from[1]];
 
-			left -= (elementBounding.width  * positionMultiplier[options.to[0]]);
-			top  -= (elementBounding.height * positionMultiplier[options.to[1]]);
+			// Element Point
+			left -= elementBounding.width  * positionMultiplier[options.to[0]];
+			top  -= elementBounding.height * positionMultiplier[options.to[1]];
 
-			element.style.left = (left + startLeft + options.offset[0]) + 'px';
-			element.style.top  = (top + startTop + options.offset[1])   + 'px';
+			// Target-Element Offset
+			left += targetBounding.left - elementBounding.left;
+			top  += targetBounding.top  - elementBounding.top;
+
+			// Defined Offset
+			left += options.offset[0];
+			top  += options.offset[1];
+
+			// Recalculate Position
+			left += toNumber(getStyle(element, 'left'));
+			top  += toNumber(getStyle(element, 'top'));
+
+			// Set Position
+			element.style.left = Math.round(left) + 'px';
+			element.style.top  = Math.round(top)  + 'px';
 
 			return this;
 		},
@@ -174,7 +186,6 @@
 			var index = indexOf(instances, this);
 			if (index > -1) {
 				instances.splice(index, 1);
-
 				this.e.style.position = this.e.style.top = this.e.style.left = '';
 			}
 			return this;
