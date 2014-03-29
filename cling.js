@@ -13,9 +13,9 @@
 
 	// Utilities
 
-	function between (min, num, max) {
-		return Math.max(min, Math.min(max, num));
-	}
+	// function between (min, num, max) {
+	// 	return Math.max(min, Math.min(max, num));
+	// }
 
 	function extend (target) {
 		var o = arguments,
@@ -46,11 +46,11 @@
 		return -1;
 	}
 
-	function proxy (fn, context) {
-		return function () {
-			return fn.apply(context, arguments);
-		};
-	}
+	// function proxy (fn, context) {
+	// 	return function () {
+	// 		return fn.apply(context, arguments);
+	// 	};
+	// }
 
 	function throttle ( fn ) {
 		var timer = false;
@@ -144,30 +144,18 @@
 				elementBounding = element.getBoundingClientRect(),
 				targetBounding  = target.getBoundingClientRect(),
 
-				left = 0,
-				top  = 0;
+				left = (targetBounding.width * positionMultiplier[options.from[0]])  // target point
+				     - (elementBounding.width * positionMultiplier[options.to[0]])   // element point
+				     + (targetBounding.left - elementBounding.left)                  // target-element offset
+				     + options.offset[0]                                             // defined offset
+				     + toNumber(getStyle(element, 'left')),                          // recalculate position
 
-			// Target Point
-			left += targetBounding.width   * positionMultiplier[options.from[0]];
-			top  += targetBounding.height  * positionMultiplier[options.from[1]];
+				top  = (targetBounding.height * positionMultiplier[options.from[1]]) // target point
+				     - (elementBounding.height * positionMultiplier[options.to[1]])  // element point
+				     + (targetBounding.top - elementBounding.top)                    // target-element offset
+				     + options.offset[1]                                             // defined offset
+				     + toNumber(getStyle(element, 'top'));                           // recalculate position
 
-			// Element Point
-			left -= elementBounding.width  * positionMultiplier[options.to[0]];
-			top  -= elementBounding.height * positionMultiplier[options.to[1]];
-
-			// Target-Element Offset
-			left += targetBounding.left - elementBounding.left;
-			top  += targetBounding.top  - elementBounding.top;
-
-			// Defined Offset
-			left += options.offset[0];
-			top  += options.offset[1];
-
-			// Recalculate Position
-			left += toNumber(getStyle(element, 'left'));
-			top  += toNumber(getStyle(element, 'top'));
-
-			// Set Position
 			element.style.left = Math.round(left) + 'px';
 			element.style.top  = Math.round(top)  + 'px';
 
