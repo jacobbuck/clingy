@@ -163,9 +163,12 @@
 		},
 
 		enable: function () {
+			var element = this.e;
 			if (indexOf(instances, this) < 0) {
 				instances.push(this);
-				this.e.style.position = 'absolute';
+			}
+			if (!getStyle(element, 'position').match(/absolute|fixed/)) {
+				element.style.position = 'absolute';
 			}
 			return this.update();
 		},
