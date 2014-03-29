@@ -169,6 +169,7 @@
 			}
 			if (!getStyle(element, 'position').match(/absolute|fixed/)) {
 				element.style.position = 'absolute';
+				element.style.top = element.style.left = 0;
 			}
 			return this.update();
 		},
