@@ -13,10 +13,6 @@
 
 	// Utilities
 
-	// function between (min, num, max) {
-	// 	return Math.max(min, Math.min(max, num));
-	// }
-
 	function extend (target) {
 		var o = arguments,
 			l = o.length,
@@ -147,17 +143,17 @@
 				elementBounding = element.getBoundingClientRect(),
 				targetBounding  = target.getBoundingClientRect(),
 
-				left = (targetBounding.width * positionMultiplier[options.from[0]])  // target point
-				     - (elementBounding.width * positionMultiplier[options.to[0]])   // element point
-				     + (targetBounding.left - elementBounding.left)                  // target-element offset
-				     + options.offset[0]                                             // defined offset
-				     + toNumber(getStyle(element, 'left')),                          // recalculate position
+				left = (target.offsetWidth * positionMultiplier[options.from[0]])  // target point
+				     - (element.offsetWidth * positionMultiplier[options.to[0]])   // element point
+				     + (targetBounding.left - elementBounding.left)                // target-element offset
+				     + options.offset[0]                                           // defined offset
+				     + toNumber(getStyle(element, 'left')),                        // recalculate position
 
-				top  = (targetBounding.height * positionMultiplier[options.from[1]]) // target point
-				     - (elementBounding.height * positionMultiplier[options.to[1]])  // element point
-				     + (targetBounding.top - elementBounding.top)                    // target-element offset
-				     + options.offset[1]                                             // defined offset
-				     + toNumber(getStyle(element, 'top'));                           // recalculate position
+				top  = (target.offsetHeight * positionMultiplier[options.from[1]]) // target point
+				     - (element.offsetHeight * positionMultiplier[options.to[1]])  // element point
+				     + (targetBounding.top - elementBounding.top)                  // target-element offset
+				     + options.offset[1]                                           // defined offset
+				     + toNumber(getStyle(element, 'top'));                         // recalculate position
 
 			element.style.left = Math.round(left) + 'px';
 			element.style.top  = Math.round(top)  + 'px';
@@ -183,12 +179,13 @@
 		},
 
 		disable: function () {
-			var scrollParent = this.s,
+			var element      = this.e,
+				scrollParent = this.s,
 				index = indexOf(instances, this);
 			if (index > -1) {
 				instances.splice(index, 1);
 			}
-			this.e.style.position = this.e.style.top = this.e.style.left = '';
+			element.style.position = element.style.top = element.style.left = '';
 			if (scrollParent) {
 				off(scrollParent, 'scroll', this.update);
 			}
