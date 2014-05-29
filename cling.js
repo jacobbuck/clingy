@@ -4,12 +4,11 @@
 		define(factory);
 	} else {
 		// Browser globals
-		root.cling = factory();
+		root.Cling = factory();
 	}
 }(this, function () {
 
-	var win = window,
-		doc = document;
+	var win = window;
 
 	// Utilities
 
@@ -28,18 +27,6 @@
 
 	function toNumber (num) {
 		return isFinite(num = parseFloat(num)) ? num : 0;
-	}
-
-	function indexOf (array, search) {
-		if ( array.indexOf ) {
-			return array.indexOf(search);
-		}
-		for (var i = 0, l = array.length; i < l; i++) {
-			if (search === array[i]) {
-				return i;
-			}
-		}
-		return -1;
 	}
 
 	function throttle (fn, context) {
@@ -83,19 +70,16 @@
 
 	// Cling
 
-	var optionsDefault     = {from: '', to: '', offset: ''},
-		positionMultiplier = {left: 0, top: 0, right: 1, bottom: 1, center: 0.5},
-
-		instances = [];
+	var positionMultiplier = {left: 0, top: 0, right: 1, bottom: 1, center: 0.5};
 
 	function normalizePosition (position) {
 		position = position.match(/(left|right|center)\s*(top|bottom|center)?/);
-		return [(position[1] || 'center'), (position[2] || 'center')];
+		return position ? [(position[1] || 'center'), (position[2] || position[1] || 'center')] : ['center', 'center'];
 	}
 
 	function normalizeOffset (offset) {
 		offset = offset.match(/(-?\d+)\s*(-?\d+)?/);
-		return [toNumber(offset[1]), toNumber(offset[2])];
+		return offset ? [toNumber(offset[1]), toNumber(offset[2])] : [0, 0];
 	}
 
 	function getScrollParent (element) {
@@ -105,17 +89,6 @@
 			}
 		}
 	}
-
-	function updateAll () {
-		var i = instances.length;
-		while (i--) {
-			instances[i].update();
-		}
-	}
-
-	on(win, 'scroll'   , updateAll);
-	on(win, 'resize'   , updateAll);
-	on(win, 'touchmove', updateAll);
 
 	function Cling (element, target, options) {
 		this.e = element;
@@ -127,33 +100,42 @@
 	Cling.prototype = {
 
 		options: function (options) {
-			options        = extend(optionsDefault, options);
-			options.from   = normalizePosition(options.from);
-			options.to     = normalizePosition(options.to);
+			options = extend({from: '', to: '', offset: ''}, options);
+			options.from = normalizePosition(options.from);
+			options.to = normalizePosition(options.to);
 			options.offset = normalizeOffset(options.offset);
 			this.o = options;
 			return this;
 		},
 
 		update: function () {
-			var element = this.e,
-				target  = this.t,
-				options = this.o,
+			var element = this.e;
+			var target = this.t;
+			var options = this.o;
 
-				elementBounding = element.getBoundingClientRect(),
-				targetBounding  = target.getBoundingClientRect(),
+			var elementBounding = element.getBoundingClientRect();
+			var targetBounding = target.getBoundingClientRect();
 
-				left = (target.offsetWidth * positionMultiplier[options.from[0]])  // target point
-				     - (element.offsetWidth * positionMultiplier[options.to[0]])   // element point
-				     + (targetBounding.left - elementBounding.left)                // target-element offset
-				     + options.offset[0]                                           // defined offset
-				     + toNumber(getStyle(element, 'left')),                        // recalculate position
+			// Dat Math
+			// 1. The target point
+			// 2. Subtract the element point
+			// 3. Add the difference between the target and element's current position
+			// 4. Add our offset
+			// 5. Add the current left/top style -- prevents layout thrashing
 
-				top  = (target.offsetHeight * positionMultiplier[options.from[1]]) // target point
-				     - (element.offsetHeight * positionMultiplier[options.to[1]])  // element point
-				     + (targetBounding.top - elementBounding.top)                  // target-element offset
-				     + options.offset[1]                                           // defined offset
-				     + toNumber(getStyle(element, 'top'));                         // recalculate position
+			var left = (target.offsetWidth * positionMultiplier[options.from[0]])
+			     - (element.offsetWidth * positionMultiplier[options.to[0]])
+			     + (targetBounding.left - elementBounding.left)
+			     + options.offset[0]
+			     + toNumber(getStyle(element, 'left'));
+
+			var top  = (target.offsetHeight * positionMultiplier[options.from[1]])
+			     - (element.offsetHeight * positionMultiplier[options.to[1]])
+			     + (targetBounding.top - elementBounding.top)
+			     + options.offset[1]
+			     + toNumber(getStyle(element, 'top'));
+
+			// Set the newly calculated positions
 
 			element.style.left = Math.round(left) + 'px';
 			element.style.top  = Math.round(top)  + 'px';
@@ -162,40 +144,45 @@
 		},
 
 		enable: function () {
-			var element      = this.e,
-				target       = this.t,
-				scrollParent = this.s = getScrollParent(target);
-			if (indexOf(instances, this) < 0) {
-				instances.push(this);
-			}
+			var element = this.e;
+			var target = this.t;
+			var scrollParent = this.s = getScrollParent(target);
+
 			if (!/absolute|fixed/.test(getStyle(element, 'position'))) {
 				element.style.position = 'absolute';
 				element.style.top = element.style.left = 0;
 			}
+
+			on(win, 'scroll', this.update);
+			on(win, 'resize', this.update);
+			on(win, 'touchmove', this.update);
+
 			if (scrollParent) {
 				on(scrollParent, 'scroll', this.update);
 			}
+
 			return this.update();
 		},
 
 		disable: function () {
-			var element      = this.e,
-				scrollParent = this.s,
-				index = indexOf(instances, this);
-			if (index > -1) {
-				instances.splice(index, 1);
-			}
+			var element      = this.e;
+			var scrollParent = this.s;
+
 			element.style.position = element.style.top = element.style.left = '';
+
+			off(win, 'scroll', this.update);
+			off(win, 'resize', this.update);
+			off(win, 'touchmove', this.update);
+
 			if (scrollParent) {
 				off(scrollParent, 'scroll', this.update);
 			}
+
 			return this;
 		}
 
 	};
 
-	return function (element, target, options) {
-		return new Cling(element, target, options);
-	};
+	return Cling;
 
 }));
