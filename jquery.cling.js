@@ -124,7 +124,7 @@
 		},
 
 		options: function (options) {
-			options = $.extend(this.defaults, options);
+			options = $.extend({}, this.defaults, this.o, options);
 			options.from = normalizePosition(options.from);
 			options.to = normalizePosition(options.to);
 			options.offset = normalizeOffset(options.offset);
