@@ -1,4 +1,4 @@
-(function (root, factory) {
+(function (factory) {
 	if (typeof define === 'function' && define.amd) {
 		// AMD. Register as an anonymous module.
 		define(['jquery'], factory);
@@ -6,7 +6,8 @@
 		// Browser globals
 		factory(window.jQuery);
 	}
-}(this, function ($) {
+}(function ($) {
+	'use strict';
 
 	// Utilities
 
@@ -75,11 +76,12 @@
 	}
 
 	function getScrollParents (element) {
-		while (element = element.parent()) {
-			if (/auto|scroll/.test(element.css('overflow') + element.css('overflow-x') + element.css('overflow-y'))) {
-				return element;
+		return element.parents().filter(function () {
+			var parent = $(this);
+			if (1 == element.nodeType && /auto|scroll/.test(parent.css('overflow') + parent.css('overflow-x') + parent.css('overflow-y'))) {
+				return true;
 			}
-		}
+		});
 	}
 
 	function Cling (element, target, options) {
@@ -109,18 +111,17 @@
 
 		// Get any scrollable parents, and listen for it scrolling
 		var scrollParents = this.s = getScrollParents(target);
-		if (scrollParents) {
+		if (scrollParents.length) {
 			scrollParents.on('scroll', this.update);
 		}
 
 		// Store instance
 		element.data('cling', this);
 
-		return this.update();
+		this.update();
 	}
 
 	Cling.prototype = {
-
 		defaults: {
 			from: '',
 			to: '',
@@ -133,7 +134,6 @@
 			options.to = normalizePosition(options.to);
 			options.offset = normalizeOffset(options.offset);
 			this.o = options;
-			return this;
 		},
 
 		update: function () {
@@ -167,13 +167,14 @@
 				left: Math.round(left),
 				top: Math.round(top)
 			});
-
-			return this;
 		},
 
 		destroy: function () {
+			var element = this.e;
+			var scrollParents = this.s;
+
 			// Remove any applied styles
-			this.e.css({
+			element.css({
 				position: '',
 				left: '',
 				top: ''
@@ -182,16 +183,16 @@
 			// Remove events
 			$(window).off('scroll resize touchmove', this.update);
 
-			if (this.s) {
-				this.s.off('scroll', this.update);
+			if (scrollParents.length) {
+				scrollParents.off('scroll', this.update);
 			}
 
 			// Remove stored instance
 			element.removeData('cling');
 		}
-
 	};
 
+	// jQuery Plugin
 	$.fn.extend({
 		cling: function (target, options) {
 			target = $(target);
@@ -211,4 +212,5 @@
 		}
 	});
 
+	return Cling;
 }));
