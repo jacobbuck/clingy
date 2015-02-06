@@ -85,10 +85,6 @@
 	}
 
 	function Cling (element, target, options) {
-		if (!(this instanceof Cling)) {
-			return new Cling(element, target, options);
-		}
-
 		// Throttle update method
 		this.update = throttle(this.update, this);
 
@@ -206,7 +202,7 @@
 						instance[target](options);
 					}
 				} else {
-					Cling(element, target, options);
+					new Cling(element, target, options);
 				}
 			});
 		}
