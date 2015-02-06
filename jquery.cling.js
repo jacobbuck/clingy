@@ -38,17 +38,43 @@
 		center: 0.5
 	};
 
+	var positionRegExp = /(left|right|center|\d+%)\s*(top|bottom|center|\d+%)/;
+
 	function normalizePosition (position) {
-		position = position.match(/(left|right|center)\s*(top|bottom|center)?/);
-		return position ? [(position[1] || 'center'), (position[2] || position[1] || 'center')] : ['center', 'center'];
+		var normalized = [0.5, 0.5];
+
+		position = positionRegExp.exec(position);
+
+		for (var i = 1; i <= 2; i++) {
+			if (!position[i]) {
+				continue;
+			} else if (positionMultiplier.hasOwnProperty(position[i])) {
+				normalized[i - 1] = positionMultiplier[position[i]];
+			} else if ('%' == position[i].substr(-1, 1)) {
+				normalized[i - 1] = toNumber(position[i]);
+			}
+		}
+
+		return normalized;
 	}
+
+	var offsetRegExp = /(-?\d+)\s*(-?\d+)?/;
 
 	function normalizeOffset (offset) {
-		offset = offset.match(/(-?\d+)\s*(-?\d+)?/);
-		return offset ? [toNumber(offset[1]), toNumber(offset[2])] : [0, 0];
+		var normalized = [0, 0];
+
+		offset = offsetRegExp.exec(offset);
+
+		for (var i = 1; i <= 2; i++) {
+			if (offset[i]) {
+				normalized[i - 1] = toNumber(offset[i]);
+			}
+		}
+
+		return normalized;
 	}
 
-	function getScrollParent (element) {
+	function getScrollParents (element) {
 		while (element = element.parent()) {
 			if (/auto|scroll/.test(element.css('overflow') + element.css('overflow-x') + element.css('overflow-y'))) {
 				return element;
@@ -57,10 +83,40 @@
 	}
 
 	function Cling (element, target, options) {
+		if (!(this instanceof Cling)) {
+			return new Cling(element, target, options);
+		}
+
+		// Throttle update method
+		this.update = throttle(this.update, this);
+
+		// Setup options
 		this.e = element;
 		this.t = target;
-		this.update = throttle(this.update, this);
-		return this.options(options).initialize();
+		this.options(options);
+
+		// Add position styles if not already `absolute` or `fixed`
+		if (!/absolute|fixed/.test(element.css('position'))) {
+			element.css({
+				position: 'absolute',
+				left: 0,
+				top: 0
+			});
+		}
+
+		// Listen to scroll or resize on window
+		$(window).on('scroll resize touchmove', this.update);
+
+		// Get any scrollable parents, and listen for it scrolling
+		var scrollParents = this.s = getScrollParents(target);
+		if (scrollParents) {
+			scrollParents.on('scroll', this.update);
+		}
+
+		// Store instance
+		element.data('cling', this);
+
+		return this.update();
 	}
 
 	Cling.prototype = {
@@ -69,28 +125,6 @@
 			from: '',
 			to: '',
 			offset: ''
-		},
-
-		initialize: function () {
-			var element = this.e;
-			var target = this.t;
-			var scrollParent = this.s = getScrollParent(target);
-
-			if (!/absolute|fixed/.test(element.css('position'))) {
-				element.css({
-					position: 'absolute',
-					left: 0,
-					top: 0
-				});
-			}
-
-			$(window).on('scroll resize touchmove', this.update);
-
-			if (scrollParent) {
-				scrollParent.on('scroll', this.update);
-			}
-
-			return this.update();
 		},
 
 		options: function (options) {
@@ -116,21 +150,19 @@
 			// 3. Add the difference between the target and element's current position
 			// 4. Add our offset
 			// 5. Add the current left/top style -- prevents layout thrashing
-
-			var left = (target.outerWidth() * positionMultiplier[options.from[0]]) -
-				(element.outerWidth() * positionMultiplier[options.to[0]]) +
+			var left = (target.outerWidth() * options.from[0]) -
+				(element.outerWidth() * options.to[0]) +
 				(targetBounding.left - elementBounding.left) +
 				options.offset[0] +
 				toNumber(element.css('left'));
 
-			var top = (target.outerHeight() * positionMultiplier[options.from[1]]) -
-				(element.outerHeight() * positionMultiplier[options.to[1]]) +
+			var top = (target.outerHeight() * options.from[1]) -
+				(element.outerHeight() * options.to[1]) +
 				(targetBounding.top - elementBounding.top) +
 				options.offset[1] +
 				toNumber(element.css('top'));
 
 			// Set the newly calculated positions
-
 			element.css({
 				left: Math.round(left),
 				top: Math.round(top)
@@ -140,19 +172,22 @@
 		},
 
 		destroy: function () {
+			// Remove any applied styles
 			this.e.css({
 				position: '',
 				left: '',
 				top: ''
 			});
 
+			// Remove events
 			$(window).off('scroll resize touchmove', this.update);
 
 			if (this.s) {
 				this.s.off('scroll', this.update);
 			}
 
-			return this;
+			// Remove stored instance
+			element.removeData('cling');
 		}
 
 	};
@@ -170,7 +205,7 @@
 						instance[target](options);
 					}
 				} else {
-					element.data('cling', new Cling(element, target, options));
+					Cling(element, target, options);
 				}
 			});
 		}
