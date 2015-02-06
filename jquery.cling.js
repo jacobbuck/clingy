@@ -1,9 +1,13 @@
+/*!
+ * Cling - Copyright (c) 2015 Jacob Buck
+ * https://github.com/jacobbuck/cling
+ * Licensed under the terms of the MIT license.
+ */
 (function (factory) {
+	// UMD yo!
 	if (typeof define === 'function' && define.amd) {
-		// AMD. Register as an anonymous module.
 		define(['jquery'], factory);
 	} else {
-		// Browser globals
 		factory(window.jQuery);
 	}
 }(function ($) {
@@ -76,22 +80,20 @@
 	}
 
 	function getScrollParents (element) {
-		return element.parents().filter(function () {
+		return element.parentsUntil('html, body').filter(function () {
 			var parent = $(this);
-			if (1 == element.nodeType && /auto|scroll/.test(parent.css('overflow') + parent.css('overflow-x') + parent.css('overflow-y'))) {
-				return true;
-			}
+			return /auto|scroll/.test(parent.css('overflow') + parent.css('overflow-x') + parent.css('overflow-y'));
 		});
 	}
 
 	function Cling (element, target, options) {
-		// Throttle update method
-		this.update = throttle(this.update, this);
-
 		// Setup options
 		this.e = element;
 		this.t = target;
 		this.options(options);
+
+		// Throttle update method
+		this.update = throttle(this.update, this);
 
 		// Add position styles if not already `absolute` or `fixed`
 		if (!/absolute|fixed/.test(element.css('position'))) {
@@ -105,14 +107,11 @@
 		// Listen to scroll or resize on window
 		$(window).on('scroll resize touchmove', this.update);
 
-		// Get any scrollable parents, and listen for it scrolling
+		// Get any scrollable parents of the target, and listen to scroll on them
 		var scrollParents = this.s = getScrollParents(target);
 		if (scrollParents.length) {
 			scrollParents.on('scroll', this.update);
 		}
-
-		// Store instance
-		element.data('cling', this);
 
 		this.update();
 	}
@@ -176,15 +175,12 @@
 				top: ''
 			});
 
-			// Remove events
+			// Unbind events
 			$(window).off('scroll resize touchmove', this.update);
 
 			if (scrollParents.length) {
 				scrollParents.off('scroll', this.update);
 			}
-
-			// Remove stored instance
-			element.removeData('cling');
 		}
 	};
 
@@ -200,9 +196,14 @@
 				if (instance instanceof Cling) {
 					if ($.isFunction(instance[target])) {
 						instance[target](options);
+
+						// Remove stored instance
+						if ('destroy' == target) {
+							element.removeData('cling');
+						}
 					}
 				} else {
-					new Cling(element, target, options);
+					element.data('cling', new Cling(element, target, options));
 				}
 			});
 		}
