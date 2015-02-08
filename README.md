@@ -11,14 +11,16 @@ $('.whatever').cling('.target', {
 	from: '25% top',
 	to: 'left 75%',
 	offset: '-10 0'
-});
+})
 ```
 
 If you need to update the options:
 
+```js
 $('.whatever').cling('options', {
 	from: '25% bottom'
-});
+})
+```
 
 And when you're done:
 
