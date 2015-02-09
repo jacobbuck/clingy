@@ -22,6 +22,12 @@ $('.whatever').cling('options', {
 })
 ```
 
+Or manually update the position:
+
+```js
+$('.whatever').cling('update')
+```
+
 And when you're done:
 
 ```js
