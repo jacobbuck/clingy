@@ -51,7 +51,7 @@
 		position = positionRegExp.exec(position);
 
 		for (var i = 1; i <= 2; i++) {
-			if (!position[i]) {
+			if (!position || !position[i]) {
 				continue;
 			} else if (positionMultiplier.hasOwnProperty(position[i])) {
 				normalized[i - 1] = positionMultiplier[position[i]];
@@ -71,7 +71,7 @@
 		offset = offsetRegExp.exec(offset);
 
 		for (var i = 1; i <= 2; i++) {
-			if (offset[i]) {
+			if (offset && offset[i]) {
 				normalized[i - 1] = toNumber(offset[i]);
 			}
 		}
@@ -87,6 +87,12 @@
 	}
 
 	function Cling (element, target, options) {
+		// Insure there's a target
+		target = $(target);
+		if (!target.length) {
+			throw new Error('There\'s nothing to cling onto.');
+		}
+
 		// Setup options
 		this.e = element;
 		this.t = target;
@@ -168,6 +174,8 @@
 			var element = this.e;
 			var scrollParents = this.s;
 
+			this.destroyed = true;
+
 			// Remove any applied styles
 			element.css({
 				position: '',
@@ -187,20 +195,15 @@
 	// jQuery Plugin
 	$.fn.extend({
 		cling: function (target, options) {
-			target = $(target);
-
 			return this.each(function () {
 				var element = $(this);
 				var instance = element.data('cling');
 
-				if (instance instanceof Cling) {
+				if (instance instanceof Cling && !instance.destroyed) {
 					if ($.isFunction(instance[target])) {
 						instance[target](options);
-
-						// Remove stored instance
-						if ('destroy' == target) {
-							element.removeData('cling');
-						}
+					} else {
+						throw new Error('`' + target + '` is not a valid method.');
 					}
 				} else {
 					element.data('cling', new Cling(element, target, options));
