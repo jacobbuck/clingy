@@ -1,0 +1,27 @@
+{
+  "name": "cling",
+  "version": "0.0.1",
+  "description": "Position an element relative to another element.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jacobbuck/cling.git"
+  },
+  "keywords": [
+    "position"
+  ],
+  "author": "Jacob Buck",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jacobbuck/cling/issues"
+  },
+  "homepage": "https://github.com/jacobbuck/cling#readme",
+  "dependencies": {
+    "dom-throttle": "0.0.2",
+    "math-clamp": "^1.0.0",
+    "object-assign": "^4.1.0"
+  }
+}
