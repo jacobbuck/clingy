@@ -1,34 +1,26 @@
 Cling
 ======
 
-Position elements relative to each other with this jQuery plugin.
+Position elements relative to each other.
 
-Usage
------
-
-```js
-$('.whatever').cling('.target', {
-	from: '25% top',
-	to: 'left 75%',
-	offset: '-10 0'
-})
-```
-
-If you need to update the options:
+Example
+-------
 
 ```js
-$('.whatever').cling('options', {
-	from: '25% bottom'
-})
-```
+var $whatever = document.querySelector('.whatever');
+var $target = document.querySelector('.target');
 
-And when you're done:
+var myCling = cling($whatever, $target, {
+	from: '25%-10 top',
+	to: 'left 75%'
+});
 
-```js
-$('.whatever').cling('destory')
+myCling.forceUpdate();
+
+myCling.destroy();
 ```
 
 Compatibility
 -------------
 
-Works on all major browsers jQuery supports. Cling also requires `requestAnimationFrame` to work properly, so you might need a [polyfill](http://paulirish.com/2011/requestanimationframe-for-smart-animating/) for older browsers.
+Requires ES5 support and `requestAnimationFrame` support. Works with polyfills.
