@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/jacobbuck/cling#readme",
   "dependencies": {
+    "desandro-get-style-property": "^1.0.4",
     "dom-throttle": "0.0.2",
     "math-clamp": "^1.0.0",
     "object-assign": "^4.1.0"
