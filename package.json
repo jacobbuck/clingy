@@ -1,5 +1,5 @@
 {
-  "name": "cling",
+  "name": "clingy",
   "version": "0.0.1",
   "description": "Position an element relative to another element.",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jacobbuck/cling.git"
+    "url": "git+https://github.com/jacobbuck/clingy.git"
   },
   "keywords": [
     "position"
@@ -16,9 +16,9 @@
   "author": "Jacob Buck",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jacobbuck/cling/issues"
+    "url": "https://github.com/jacobbuck/clingy/issues"
   },
-  "homepage": "https://github.com/jacobbuck/cling#readme",
+  "homepage": "https://github.com/jacobbuck/clingy#readme",
   "dependencies": {
     "desandro-get-style-property": "^1.0.4",
     "dom-throttle": "0.0.2",

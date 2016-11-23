@@ -1,16 +1,16 @@
-Cling
-======
+# clingy
 
 Position elements relative to each other.
 
-Example
--------
+## Example
 
 ```js
-var $whatever = document.querySelector('.whatever');
-var $target = document.querySelector('.target');
+var cling = require('clingy');
 
-var myCling = cling($whatever, $target, {
+var whatever = document.querySelector('.whatever');
+var target = document.querySelector('.target');
+
+var myCling = cling(whatever, target, {
 	from: '25%-10 top',
 	to: 'left 75%'
 });
@@ -20,7 +20,6 @@ myCling.forceUpdate();
 myCling.destroy();
 ```
 
-Compatibility
--------------
+## Compatibility
 
-Requires ES5 support and `requestAnimationFrame` support. Works with your usual polyfills.
+Requires ES5 support and `requestAnimationFrame` support. Works with your usual shims.
