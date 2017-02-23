@@ -22,7 +22,7 @@
   "dependencies": {
     "desandro-get-style-property": "^1.0.4",
     "dom-throttle": "0.0.2",
-    "math-clamp": "^1.0.0",
-    "object-assign": "^4.1.0"
+    "is-window": "^1.0.2",
+    "lodash": "^4.17.4"
   }
 }
