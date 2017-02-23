@@ -5,12 +5,12 @@ Position elements relative to each other.
 ## Example
 
 ```js
-var cling = require('clingy');
+import cling from 'clingy';
 
-var whatever = document.querySelector('.whatever');
-var target = document.querySelector('.target');
+const whatever = document.querySelector('.whatever');
+const target = document.querySelector('.target');
 
-var myCling = cling(whatever, target, {
+const myCling = cling(whatever, target, {
 	from: '25%-10 top',
 	to: 'left 75%'
 });
