@@ -1,6 +1,6 @@
 {
   "name": "clingy",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Position an element relative to another element.",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,6 @@
   "homepage": "https://github.com/jacobbuck/clingy#readme",
   "dependencies": {
     "desandro-get-style-property": "^1.0.4",
-    "dom-throttle": "0.0.2",
     "is-window": "^1.0.2",
     "lodash": "^4.17.4"
   }
