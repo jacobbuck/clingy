@@ -2,15 +2,23 @@
   "name": "clingy",
   "version": "0.0.7",
   "description": "Position an element relative to another element.",
-  "main": "index.js",
+  "main": "lib/clingy.js",
+  "files": [
+    "lib"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel --out-dir lib src",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jacobbuck/clingy.git"
   },
-  "keywords": ["position", "offset"],
+  "keywords": [
+    "position",
+    "offset"
+  ],
   "author": "Jacob Buck",
   "license": "MIT",
   "bugs": {
@@ -21,5 +29,10 @@
     "desandro-get-style-property": "^1.0.4",
     "is-window": "^1.0.2",
     "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-es2015": "^6.24.1"
   }
 }
