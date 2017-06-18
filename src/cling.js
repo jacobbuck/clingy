@@ -53,10 +53,8 @@ const cling = (fromEl, toEl, options) => {
   }
 
   // Apply initial positioning styles
-  fromEl.style.left = "0px";
-  fromEl.style.top = "0px";
-  fromEl.style.right = "auto";
-  fromEl.style.bottom = "auto";
+  fromEl.style.left = fromEl.style.top = "0px";
+  fromEl.style.right = fromEl.style.bottom = "auto";
   fromEl.style.transform = "";
 
   const destroy = () => {
@@ -70,12 +68,8 @@ const cling = (fromEl, toEl, options) => {
     throttledPosition.cancel();
 
     // Reset styles
-    fromEl.style.position = "";
-    fromEl.style.left = "";
-    fromEl.style.top = "";
-    fromEl.style.right = "";
-    fromEl.style.bottom = "";
-    fromEl.style.transform = "";
+    fromEl.style.position = fromEl.style.left = fromEl.style.top = fromEl.style.right = fromEl.style.bottom = fromEl.style.transform =
+      "";
 
     if (options.listen) {
       // Unbind events
