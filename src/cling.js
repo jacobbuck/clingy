@@ -1,69 +1,65 @@
-'use strict';
+import getStyleProperty from "desandro-get-style-property";
+import clamp from "lodash/clamp";
+import throttle from "lodash/throttle";
+import getBounding from "./getBounding";
+import getComputedStyleValue from "./getComputedStyleValue";
+import getScrollParents from "./getScrollParents";
+import expandPositionOffsetOption from "./expandPositionOffsetOption";
+import splitOption from "./splitOption";
 
-var getStyleProperty = require('desandro-get-style-property');
-var assign = require('lodash/assign');
-var clamp = require('lodash/clamp');
-var throttle = require('lodash/throttle');
-var getBounding = require('./getBounding');
-var getComputedStyleValue = require('./getComputedStyleValue');
-var getScrollParents = require('./getScrollParents');
-var expandPositionOffsetOption = require('./expandPositionOffsetOption');
-var splitOption = require('./splitOption');
+const transformProp = getStyleProperty("transform");
 
-var TRANSFORM_PROP = getStyleProperty('transform');
-
-var OPTIONS_DEFAULT = {
-  collision: ['none', 'none'],
+const defaultOptions = {
+  collision: ["none", "none"],
   delay: 100,
-  from: ['center', 'center'],
+  from: ["center", "center"],
   gpu: true,
   listen: true,
-  onBeforeDestroy: function() {},
-  onBeforePosition: function() {},
-  onDestroy: function() {},
-  onPosition: function() {},
-  to: ['center', 'center'],
+  onBeforeDestroy: () => {},
+  onBeforePosition: () => {},
+  onDestroy: () => {},
+  onPosition: () => {},
+  to: ["center", "center"],
   window: window,
   within: null
 };
 
-var WINDOW_UPDATE_EVENTS = ['load', 'scroll', 'resize', 'touchmove'];
+const windowUpdateEvents = ["load", "scroll", "resize", "touchmove"];
 
-module.exports = function cling(fromEl, toEl, options) {
+const cling = (fromEl, toEl, options) => {
   // Normalize options
-  options = assign({}, OPTIONS_DEFAULT, options);
-  var fromOption = splitOption(options.from).map(expandPositionOffsetOption);
-  var toOption = splitOption(options.to).map(expandPositionOffsetOption);
-  var collisionOption = splitOption(options.collision);
-  var useTransform = options.gpu && TRANSFORM_PROP;
+  options = { ...defaultOptions, ...options };
 
-  // Window to bind events to
-  var window = options.window;
-
-  // To prevent multiply destroys
-  var destroyed = false;
-
-  // Cached fromEl top and left position styles
-  var fromElPositionCache = { left: 0, top: 0 };
+  const fromOption = splitOption(options.from).map(expandPositionOffsetOption);
+  const toOption = splitOption(options.to).map(expandPositionOffsetOption);
+  const collisionOption = splitOption(options.collision);
+  const useTransform = options.gpu && transformProp;
 
   // Get any scrollable parents of the toEl for listening to scroll events
-  var scrollParents = getScrollParents(toEl);
+  const scrollParents = getScrollParents(toEl);
+
+  // Window to bind events to
+  const window = options.window;
+
+  // To prevent multiply destroys
+  let destroyed = false;
+
+  // Cached fromEl top and left position styles
+  let fromElPositionCache = { left: 0, top: 0 };
 
   // Add `position: absolute;` style, unless already `position: fixed;`
-  if (getComputedStyleValue(fromEl, 'position') !== 'fixed') {
-    fromEl.style.position = 'absolute';
+  if (getComputedStyleValue(fromEl, "position") !== "fixed") {
+    fromEl.style.position = "absolute";
   }
 
   // Apply initial positioning styles
-  assign(fromEl.style, {
-    left: '0px',
-    top: '0px',
-    right: 'auto',
-    bottom: 'auto',
-    transform: ''
-  });
+  fromEl.style.left = "0px";
+  fromEl.style.top = "0px";
+  fromEl.style.right = "auto";
+  fromEl.style.bottom = "auto";
+  fromEl.style.transform = "";
 
-  function destroy() {
+  const destroy = () => {
     // Destroy can only happen once
     if (destroyed) return;
     destroyed = true;
@@ -74,43 +70,41 @@ module.exports = function cling(fromEl, toEl, options) {
     throttledPosition.cancel();
 
     // Reset styles
-    assign(fromEl.style, {
-      position: '',
-      left: '',
-      top: '',
-      right: '',
-      bottom: '',
-      transform: ''
-    });
+    fromEl.style.position = "";
+    fromEl.style.left = "";
+    fromEl.style.top = "";
+    fromEl.style.right = "";
+    fromEl.style.bottom = "";
+    fromEl.style.transform = "";
 
     if (options.listen) {
       // Unbind events
-      WINDOW_UPDATE_EVENTS.forEach(function(eventName) {
-        window.removeEventListener(eventName, position, false);
-      });
+      windowUpdateEvents.forEach(eventName =>
+        window.removeEventListener(eventName, position, false)
+      );
 
-      window.removeEventListener('unload', destroy, false);
+      window.removeEventListener("unload", destroy, false);
 
       if (scrollParents.length) {
-        scrollParents.forEach(function(el) {
-          el.removeEventListener('scroll', position, false);
-        });
+        scrollParents.forEach(el =>
+          el.removeEventListener("scroll", position, false)
+        );
       }
     }
 
     options.onDestroy();
-  }
+  };
 
-  function position () {
+  const position = () => {
     if (destroyed) return;
 
     options.onBeforePosition();
 
-    var fromElBounds = getBounding(fromEl);
-    var toElBounds = getBounding(toEl);
-    var offsetParent;
-    var offsetElBounds;
-    var withinBounds;
+    const fromElBounds = getBounding(fromEl);
+    const toElBounds = getBounding(toEl);
+    let offsetParent;
+    let offsetElBounds;
+    let withinBounds;
 
     if (options.within) {
       offsetParent = fromEl.offsetParent;
@@ -120,36 +114,40 @@ module.exports = function cling(fromEl, toEl, options) {
       withinBounds = getBounding(options.within);
     }
 
-    var newPositions = [
-      { axis: 'left', size: 'width' },
-      { axis: 'top', size: 'height' }
-    ].reduce(function(newPositions, o, i) {
-      var axis = o.axis;
-      var size = o.size;
+    const newPositions = [
+      { axis: "left", size: "width" },
+      { axis: "top", size: "height" }
+    ].reduce((newPositions, o, i) => {
+      const axis = o.axis;
+      const size = o.size;
 
-      // Dat Math
-      // 1. Add the toEl point
-      // 2. Subtract the fromEl point
-      // 3. Add the difference between the toEl and fromEl's current position
-      // 4. Add our offset
-      // 5. Add the current left/top style
-      var newPosition =
-        (toElBounds[size] * toOption[i].position) - // 1
-        (fromElBounds[size] * fromOption[i].position) + // 2
+      /**
+       * Dat Math
+       * 1. Add the toEl point
+       * 2. Subtract the fromEl point
+       * 3. Add the difference between the toEl and fromEl's current position
+       * 4. Add our offset
+       * 5. Add the current left/top style
+       */
+      let newPosition =
+        toElBounds[size] * toOption[i].position - // 1
+        fromElBounds[size] * fromOption[i].position + // 2
         (toElBounds[axis] - fromElBounds[axis]) + // 3
-        fromOption[i].offset + toOption[i].offset + // 4
+        fromOption[i].offset +
+        toOption[i].offset + // 4
         fromElPositionCache[axis]; // 5
 
       // Optionally fit inside within element
-      if (withinBounds && collisionOption[i] === 'fit') {
-        var withinOffset = offsetElBounds ? offsetElBounds[axis] : 0;
-        var withinMin = withinBounds[axis] - withinOffset;
-        var withinMax = withinMin + withinBounds[size] - fromElBounds[size];
+      if (withinBounds && collisionOption[i] === "fit") {
+        const withinOffset = offsetElBounds ? offsetElBounds[axis] : 0;
+        const withinMin = withinBounds[axis] - withinOffset;
+        const withinMax = withinMin + withinBounds[size] - fromElBounds[size];
         newPosition = clamp(newPosition, withinMin, withinMax);
       }
 
       // Round the values to prevent sub-pixel issues.
       newPositions[axis] = Math.round(newPosition);
+
       return newPositions;
     }, {});
 
@@ -158,39 +156,38 @@ module.exports = function cling(fromEl, toEl, options) {
       newPositions.left !== fromElPositionCache.left ||
       newPositions.top !== fromElPositionCache.top
     ) {
-      applyPositionStyles(newPositions);
+      if (useTransform) {
+        fromEl.style[
+          transformProp
+        ] = `translateX(${position.left}px) translateY(${position.top}px) translateZ(0)`;
+      } else {
+        fromEl.style.left = `${position.left}px`;
+        fromEl.style.top = `${position.top}px`;
+      }
+
+      options.onPosition(position);
+
       // Cache the newly calculated position.
       fromElPositionCache = newPositions;
     }
-  }
+  };
 
-  function applyPositionStyles(position) {
-    if (useTransform) {
-      fromEl.style[TRANSFORM_PROP] = 'translateX(' + position.left + 'px) translateY(' + position.top + 'px) translateZ(0)';
-    } else {
-      fromEl.style.left = position.left + 'px';
-      fromEl.style.top = position.top + 'px';
-    }
-
-    options.onPosition(position);
-  }
-
-  var throttledPosition = throttle(position, options.delay);
+  const throttledPosition = throttle(position, options.delay);
 
   if (options.listen) {
     // Listen to load, scroll or resize on window
-    WINDOW_UPDATE_EVENTS.forEach(function(eventName) {
-      window.addEventListener(eventName, throttledPosition, false);
-    });
+    windowUpdateEvents.forEach(eventName =>
+      window.addEventListener(eventName, throttledPosition, false)
+    );
 
     // Automatically destroy on window unload
-    window.addEventListener('unload', destroy, false);
+    window.addEventListener("unload", destroy, false);
 
     // Listen to scroll on scrollable parents
     if (scrollParents.length) {
-      scrollParents.forEach(function(el) {
-        el.addEventListener('scroll', throttledPosition, false);
-      });
+      scrollParents.forEach(el =>
+        el.addEventListener("scroll", throttledPosition, false)
+      );
     }
   }
 
@@ -198,8 +195,10 @@ module.exports = function cling(fromEl, toEl, options) {
   position();
 
   return {
-    destroy: destroy,
+    destroy,
     forceUpdate: position,
-    isDestroyed: function() { return destroyed; }
+    isDestroyed: () => destroyed
   };
 };
+
+export default cling;

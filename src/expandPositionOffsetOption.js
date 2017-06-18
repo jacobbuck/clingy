@@ -1,6 +1,4 @@
-'use strict';
-
-var POSITION_KEYWORD_MULTIPLIERS = {
+const positionKeywordMultipliers = {
   left: 0,
   top: 0,
   right: 1,
@@ -9,19 +7,19 @@ var POSITION_KEYWORD_MULTIPLIERS = {
   middle: 0.5
 };
 
-var PERCENT_MULTIPLIER = 0.01;
+const percentMultiplier = 0.01;
 
-var EXPAND_OFFSET_REXEXP = /^([a-z]+|[0-9]+%)([+-][0-9]+)?$/;
+const expandOffsetRexExp = /^([a-z]+|[0-9]+%)([+-][0-9]+)?$/;
 
-module.exports = function expandPositionOffsetOption(val) {
-  var matches = EXPAND_OFFSET_REXEXP.exec(val.trim());
-  var position;
-  var offset;
+const expandPositionOffsetOption = val => {
+  const matches = expandOffsetRexExp.exec(val.trim());
+  let position;
+  let offset;
 
-  if (POSITION_KEYWORD_MULTIPLIERS.hasOwnProperty(matches[1])) {
-    position = POSITION_KEYWORD_MULTIPLIERS[matches[1]];
+  if (positionKeywordMultipliers.hasOwnProperty(matches[1])) {
+    position = positionKeywordMultipliers[matches[1]];
   } else {
-    position = parseInt(matches[1]) * PERCENT_MULTIPLIER;
+    position = parseInt(matches[1]) * percentMultiplier;
   }
 
   if (matches[2]) {
@@ -30,8 +28,7 @@ module.exports = function expandPositionOffsetOption(val) {
 
   offset = offset || 0;
 
-  return {
-    position: position,
-    offset: offset
-  };
+  return { position, offset };
 };
+
+export default expandPositionOffsetOption;

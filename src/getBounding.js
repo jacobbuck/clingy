@@ -1,8 +1,6 @@
-'use strict';
+import isWindow from "is-window";
 
-var isWindow = require('is-window');
-
-module.exports = function getBounding(el) {
+const getBounding = el => {
   if (isWindow(el)) {
     return {
       left: el.pageXOffset,
@@ -12,7 +10,7 @@ module.exports = function getBounding(el) {
     };
   }
 
-  var bounding = el.getBoundingClientRect();
+  const bounding = el.getBoundingClientRect();
   return {
     left: bounding.left,
     top: bounding.top,
@@ -20,3 +18,5 @@ module.exports = function getBounding(el) {
     height: bounding.bottom - bounding.top
   };
 };
+
+export default getBounding;

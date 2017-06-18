@@ -1,20 +1,20 @@
-'use strict';
+import getComputedStyleValue from "./getComputedStyleValue";
 
-var getComputedStyleValue = require('./getComputedStyleValue');
+const autoOrScrollRegExp = /auto|scroll/i;
 
-var AUTO_OR_SCROLL_REGEXP = /auto|scroll/;
-
-module.exports = function getScrollParents(el) {
-  var scrollParents = [];
+const getScrollParents = el => {
+  const scrollParents = [];
   while (el.parentNode && Node.ELEMENT_NODE === el.parentNode.nodeType) {
     el = el.parentNode;
-    if (AUTO_OR_SCROLL_REGEXP.test(''.concat(
-      getComputedStyleValue(el, 'overflow'),
-      getComputedStyleValue(el, 'overflow-x'),
-      getComputedStyleValue(el, 'overflow-y')
-    ).toLowerCase())) {
+    if (
+      autoOrScrollRegExp.test(getComputedStyleValue(el, "overflow")) ||
+      autoOrScrollRegExp.test(getComputedStyleValue(el, "overflow-x")) ||
+      autoOrScrollRegExp.test(getComputedStyleValue(el, "overflow-y"))
+    ) {
       scrollParents.push(el);
     }
   }
   return scrollParents;
 };
+
+export default getScrollParents;

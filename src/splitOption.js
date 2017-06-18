@@ -1,11 +1,6 @@
-'use strict';
+const whitespaceRegExp = /\s+/;
 
-var WHITESPACE_REGEXP = /\s+/;
-
-module.exports = function splitOption(val) {
-  if (typeof val === 'string') {
-    return val.split(WHITESPACE_REGEXP)
-      .filter(function(v) { return v.trim(); });
-  }
-  return val;
-};
+const splitOption = val =>
+  typeof val === "string"
+    ? val.split(whitespaceRegExp).filter(v => v.trim())
+    : val;
