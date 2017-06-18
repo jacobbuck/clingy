@@ -1,5 +1,4 @@
-'use strict';
+const getComputedStyleValue = (el, prop) =>
+  window.getComputedStyle(el, null).getPropertyValue(prop);
 
-module.exports = function getComputedStyleValue(el, prop) {
-  return window.getComputedStyle(el, null).getPropertyValue(prop);
-};
+export default getComputedStyleValue;
