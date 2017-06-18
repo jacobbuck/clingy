@@ -1,6 +1,6 @@
 {
   "name": "clingy",
-  "version": "0.0.7",
+  "version": "1.0.0",
   "description": "Position an element relative to another element.",
   "main": "lib/clingy.js",
   "files": [
