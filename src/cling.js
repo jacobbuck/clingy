@@ -159,7 +159,7 @@ const cling = (fromEl, toEl, options) => {
         fromEl.style.top = `${newPositions.top}px`;
       }
 
-      options.onPosition(position);
+      options.onPosition(newPositions);
 
       // Cache the newly calculated position.
       fromElPositionCache = newPositions;
