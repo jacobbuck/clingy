@@ -153,10 +153,10 @@ const cling = (fromEl, toEl, options) => {
       if (useTransform) {
         fromEl.style[
           transformProp
-        ] = `translateX(${position.left}px) translateY(${position.top}px) translateZ(0)`;
+        ] = `translateX(${newPositions.left}px) translateY(${newPositions.top}px) translateZ(0)`;
       } else {
-        fromEl.style.left = `${position.left}px`;
-        fromEl.style.top = `${position.top}px`;
+        fromEl.style.left = `${newPositions.left}px`;
+        fromEl.style.top = `${newPositions.top}px`;
       }
 
       options.onPosition(position);
