@@ -1,3 +1,7 @@
+> # :rotating_light: Deprecated
+> 
+> This project is no longer being maintained. I'd recommend using the popular [Popper](https://github.com/popperjs/popper-core) package instead as it's	mature, better tested, and offers more features.
+
 # clingy
 
 Position elements relative to each other.
